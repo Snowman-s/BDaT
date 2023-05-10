@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 import { SplitPane } from "./SplitPane";
 import { ParsedData } from "./ParsedData";
+import { parse } from "path";
 
 function binaryWindow(
   binaries: number[],
@@ -56,7 +57,6 @@ function analysisWindow(
   selected: SelectedFragment | null,
   onAnalysisClicked: (p: ParsedData) => void
 ) {
-  console.log(JSON.stringify(parsed));
   function accordion(name: string, parsed: ParsedData) {
     if (parsed.children.length === 0) {
       return (
@@ -221,7 +221,7 @@ function App() {
   }, [filePath, parserValue]);
 
   useEffect(() => {
-    if (binaries == null) {
+    if (binaries == null || parserValue == null) {
       setParsed(null);
       return;
     }
@@ -232,9 +232,9 @@ function App() {
       invoke("parse", {
         parser: parserValue,
         data: binaries,
-      }) as Promise<ParsedData>
+      }) as Promise<ParsedData | string>
     ).then((parsed) => {
-      if (!ignore) {
+      if (!ignore && typeof parsed !== "string") {
         setParsed(parsed);
       }
       setLoading(false);

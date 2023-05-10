@@ -58,8 +58,11 @@ fn parse_text_file_utf8(data: &Vec<u8>) -> serde_json::Value {
     if now_vec.len() != 0 {
         let explain = String::from_utf8(now_vec).unwrap_or("???".into());
         children.as_array_mut().unwrap().append(&mut vec![
-            serde_json::json!({ "explain": explain, "children":[] }),
-        ]);
+          serde_json::json!({
+            "name": "行",
+            "data": { "explain": explain, "minIndex": min_index, "maxIndex": max_index, "children":[] }
+          }),
+      ]);
     }
 
     serde_json::json!({
