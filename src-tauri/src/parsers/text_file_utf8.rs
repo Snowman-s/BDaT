@@ -1,39 +1,16 @@
-pub fn parse_text_file_utf8(data: &Vec<u8>) -> serde_json::Value {
-  let mut children: serde_json::Value = serde_json::json!([]);
+use std::default;
 
-  let mut now_vec: Vec<u8> = vec![];
-  let mut min_index = 0;
-  let mut max_index = -1;
-  for d in data {
-      now_vec.append(&mut vec![d.clone()]);
-      max_index += 1;
-      if d == &b'\n' {
-          let explain = String::from_utf8(now_vec).unwrap_or("???".into());
-          children.as_array_mut().unwrap().append(&mut vec![
-              serde_json::json!({
-                "name": "行",
-                "data": { "explain": explain, "minIndex": min_index, "maxIndex": max_index, "children":[] }
-              }),
-          ]);
-          now_vec = vec![];
-          min_index = max_index + 1;
-      }
-  }
+pub fn ask_name(parent_id: &str, child: &serde_json::Value) -> Option<String> {
+    match parent_id {
+        "テキストファイル" => Some("行".into()),
+        default => None,
+    }
+}
 
-  if now_vec.len() != 0 {
-      let explain = String::from_utf8(now_vec).unwrap_or("???".into());
-      children.as_array_mut().unwrap().append(&mut vec![
-        serde_json::json!({
-          "name": "行",
-          "data": { "explain": explain, "minIndex": min_index, "maxIndex": max_index, "children":[] }
-        }),
-    ]);
-  }
-
-  serde_json::json!({
-    "explain": "テキストファイル",
-    "minIndex": 0,
-    "maxIndex": data.len(),
-    "children": children
-  })
+pub fn ask_explain(id: &str, raw_bytes: &[u8], data: &serde_json::Value) -> Option<String> {
+    match id {
+        "テキストファイル" => Some("テキストファイル".into()),
+        "行" => Some(String::from_utf8_lossy(raw_bytes).to_string()),
+        default => None,
+    }
 }

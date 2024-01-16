@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=../../../syntax_schema/syntax.schema.json
+
+id: テキストファイル
+
+type: repeat0
+
+children:
+  id: 行
+
+  type: until_byte
+  byte: 10 # '\n'

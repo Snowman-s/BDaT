@@ -36,8 +36,8 @@ function binaryWindow(
                 onMouseDown={(_) => onBinaryClicked(dat.index)}
                 style={
                   selected != null &&
-                  selected.binary.minIndex <= dat.index &&
-                  dat.index <= selected.binary.maxIndex
+                    selected.binary.minIndex <= dat.index &&
+                    dat.index < selected.binary.maxIndex
                     ? { background: "blue" }
                     : {}
                 }
