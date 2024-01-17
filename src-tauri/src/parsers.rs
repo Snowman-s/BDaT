@@ -70,7 +70,6 @@ fn parse_main(
     min_index: usize,
     parser: &Parsers,
 ) -> ParseResult {
-    let id = def.get("id").and_then(|t| t.as_str());
     let behavior = def.get("type").and_then(|t| t.as_str());
 
     match behavior {

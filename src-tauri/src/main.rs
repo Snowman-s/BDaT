@@ -25,7 +25,7 @@ fn parse(parser: String, data: Vec<u8>) -> serde_json::Value {
 
 #[tauri::command]
 fn get_parser_list() -> Vec<String> {
-    PARSERS_LIST.keys().map(|s| s.clone().into()).collect()
+    PARSERS_LIST.keys().map(|s| s.to_string()).collect()
 }
 
 fn main() {
