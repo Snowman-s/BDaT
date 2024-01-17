@@ -53,7 +53,7 @@ function binaryWindow(
 }
 
 function analysisWindow(
-  parsed: ParsedData | null,
+  parsedArray: ParsedData[] | null,
   selected: SelectedFragment | null,
   onAnalysisClicked: (p: ParsedData) => void
 ) {
@@ -80,12 +80,12 @@ function analysisWindow(
       );
     }
   }
-  return parsed == null ? <></> : accordion("", parsed);
+  return parsedArray == null ? <></> : parsedArray.map(parsed => accordion("", parsed));
 }
 
 function binariesToJSX(
   binaries: number[],
-  parsed: ParsedData | null,
+  parsed: ParsedData[] | null,
   selected: SelectedFragment | null,
   onBinaryClicked: (index: number) => void,
   onAnalysisClicked: (p: ParsedData) => void
@@ -124,28 +124,34 @@ type SelectedFragment = {
 };
 
 function createSelectedFragment(
-  parsed: ParsedData | null,
+  parsedArray: ParsedData[] | null,
   binaryIndexOrAnalysis: number | ParsedData
 ): SelectedFragment | null {
-  if (parsed == null) return null;
+  if (parsedArray == null) return null;
+
 
   if (typeof binaryIndexOrAnalysis == "number") {
-    const binaryIndex = binaryIndexOrAnalysis;
-    let nowLooking = parsed;
-    while (nowLooking.children.length !== 0) {
-      let nowLookingOrUndefined = nowLooking.children.find(
-        (child) =>
-          child.data.minIndex <= binaryIndex &&
-          binaryIndex <= child.data.maxIndex
-      );
-      if (nowLookingOrUndefined === undefined) return null;
-      nowLooking = nowLookingOrUndefined.data;
+    for (let parsed of parsedArray) {
+      const binaryIndex = binaryIndexOrAnalysis;
+      let nowLooking = parsed;
+      while (nowLooking.children.length !== 0) {
+        let nowLookingOrUndefined = nowLooking.children.find(
+          (child) =>
+            child.data.minIndex <= binaryIndex &&
+            binaryIndex <= child.data.maxIndex
+        );
+        if (nowLookingOrUndefined === undefined) return null;
+        nowLooking = nowLookingOrUndefined.data;
+      }
+
+      return {
+        binary: { minIndex: nowLooking.minIndex, maxIndex: nowLooking.maxIndex },
+        parsed: nowLooking,
+      };
     }
 
-    return {
-      binary: { minIndex: nowLooking.minIndex, maxIndex: nowLooking.maxIndex },
-      parsed: nowLooking,
-    };
+    // Cannot be reach
+    return null;
   } else {
     return {
       binary: {
@@ -159,7 +165,7 @@ function createSelectedFragment(
 
 function App() {
   const [binaries, setBinaries] = useState<number[]>([]);
-  const [parsed, setParsed] = useState<ParsedData | null>(null);
+  const [parsed, setParsed] = useState<ParsedData[] | null>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -232,9 +238,10 @@ function App() {
       invoke("parse", {
         parser: parserValue,
         data: binaries,
-      }) as Promise<ParsedData | string>
+      }) as Promise<ParsedData[] | string>
     ).then((parsed) => {
       if (!ignore && typeof parsed !== "string") {
+        console.log(parsed);
         setParsed(parsed);
       }
       setLoading(false);

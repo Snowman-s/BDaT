@@ -14,13 +14,13 @@ impl Parsers {
         }
     }
 
-    fn ask_name(&self, parent_id: &str, child: &serde_json::Value) -> Option<String> {
+    fn ask_name(&self, parent_id: &str, child: &serde_json::Value) -> String {
         match self {
             Parsers::TextFileUTF8 => text_file_utf8::ask_name(parent_id, child),
         }
     }
 
-    fn ask_explain(&self, id: &str, raw_bytes: &[u8], data: &serde_json::Value) -> Option<String> {
+    fn ask_explain(&self, id: &str, raw_bytes: &[u8], data: &serde_json::Value) -> String {
         match self {
             Parsers::TextFileUTF8 => text_file_utf8::ask_explain(id, raw_bytes, &data),
         }
@@ -35,14 +35,14 @@ pub fn inner_parse(parser: &str, data: Vec<u8>) -> serde_json::Value {
     PARSERS_LIST.get(parser).map_or_else(
         || parse_failure(&data, 0),
         |parser| match parse(parser, &data).body {
-            Ok(result) => result,
+            Ok(result) => serde_json::Value::Array(result),
             Err(_) => parse_failure(&data, 0),
         },
     )
 }
 
 struct ParseResult {
-    body: Result<serde_json::Value, ()>,
+    body: Result<Vec<serde_json::Value>, ()>,
     new_min_index: usize,
 }
 
@@ -76,8 +76,8 @@ fn parse_main(
     match behavior {
         Some("repeat0") => parse_repeat0(def, data, min_index, parser),
         Some("until_byte") => parse_until_byte(def, data, min_index, parser),
-        default => ParseResult {
-            body: Ok(parse_failure(data, min_index)),
+        _ => ParseResult {
+            body: Ok(vec![parse_failure(data, min_index)]),
             new_min_index: data.len(),
         },
     }
@@ -102,41 +102,42 @@ fn parse_repeat0(
         }
 
         let result = parse_main(child_def, data, mut_min_index, parser);
-        if let Ok(value) = result.body {
-            if let Some(id) = id_def {
-                let opt_name = parser.ask_name(id, &value);
-
-                if let Some(name) = opt_name {
-                    children.push(serde_json::json!(
-                      {
-                        "name": name,
-                        "data": value
-                      }
-                    ));
-                }
+        if let Ok(values) = result.body {
+            for value in values {
+                children.push(value);
+                mut_min_index = result.new_min_index;
             }
-            mut_min_index = result.new_min_index;
         } else {
             break;
         }
     }
 
-    let mut body =
-        serde_json::json!({"minIndex": min_index, "maxIndex": mut_min_index, "children":children});
+    match id_def {
+        Some(id) => {
+            let mut children_with_name = vec![];
+            for child in &children {
+                children_with_name.push(serde_json::json!({
+                  "name": parser.ask_name(id, &child),
+                  "data": child
+                }));
+            }
+            let mut body = serde_json::json!({"minIndex": min_index, "maxIndex": mut_min_index, "children":children_with_name});
 
-    if let Some(id) = id_def {
-        let opt_explain = parser.ask_explain(id, &data[min_index..mut_min_index], &body);
+            let explain = parser.ask_explain(id, &data[min_index..mut_min_index], &body);
 
-        if let Some(explain) = opt_explain {
             body.as_object_mut()
                 .unwrap()
                 .insert("explain".to_owned(), serde_json::Value::String(explain));
-        }
-    }
 
-    ParseResult {
-        body: Ok(body),
-        new_min_index: mut_min_index,
+            ParseResult {
+                body: Ok(vec![body]),
+                new_min_index: mut_min_index,
+            }
+        }
+        None => ParseResult {
+            body: Ok(children),
+            new_min_index: mut_min_index,
+        },
     }
 }
 
@@ -166,17 +167,15 @@ fn parse_until_byte(
         serde_json::json!({"minIndex": min_index, "maxIndex": new_min_index, "children":[]});
 
     if let Some(id) = id_def {
-        let opt_explain = parser.ask_explain(id, &data[min_index..new_min_index], &body);
+        let explain = parser.ask_explain(id, &data[min_index..new_min_index], &body);
 
-        if let Some(explain) = opt_explain {
-            body.as_object_mut()
-                .unwrap()
-                .insert("explain".to_owned(), serde_json::Value::String(explain));
-        }
+        body.as_object_mut()
+            .unwrap()
+            .insert("explain".to_owned(), serde_json::Value::String(explain));
     }
 
     ParseResult {
-        body: Ok(body),
+        body: Ok(vec![body]),
         new_min_index,
     }
 }
