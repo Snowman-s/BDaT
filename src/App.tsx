@@ -53,7 +53,7 @@ function binaryWindow(
 }
 
 function analysisWindow(
-  parsedArray: ParsedData[] | null,
+  parsed: ParsedData | null,
   selected: SelectedFragment | null,
   onAnalysisClicked: (p: ParsedData) => void
 ) {
@@ -80,12 +80,12 @@ function analysisWindow(
       );
     }
   }
-  return parsedArray == null ? <></> : parsedArray.map(parsed => accordion("", parsed));
+  return parsed == null ? <></> : accordion("", parsed);
 }
 
 function binariesToJSX(
   binaries: number[],
-  parsed: ParsedData[] | null,
+  parsed: ParsedData | null,
   selected: SelectedFragment | null,
   onBinaryClicked: (index: number) => void,
   onAnalysisClicked: (p: ParsedData) => void
@@ -124,34 +124,29 @@ type SelectedFragment = {
 };
 
 function createSelectedFragment(
-  parsedArray: ParsedData[] | null,
+  parsed: ParsedData | null,
   binaryIndexOrAnalysis: number | ParsedData
 ): SelectedFragment | null {
-  if (parsedArray == null) return null;
+  if (parsed == null) return null;
 
 
   if (typeof binaryIndexOrAnalysis == "number") {
-    for (let parsed of parsedArray) {
-      const binaryIndex = binaryIndexOrAnalysis;
-      let nowLooking = parsed;
-      while (nowLooking.children.length !== 0) {
-        let nowLookingOrUndefined = nowLooking.children.find(
-          (child) =>
-            child.data.minIndex <= binaryIndex &&
-            binaryIndex <= child.data.maxIndex
-        );
-        if (nowLookingOrUndefined === undefined) return null;
-        nowLooking = nowLookingOrUndefined.data;
-      }
-
-      return {
-        binary: { minIndex: nowLooking.minIndex, maxIndex: nowLooking.maxIndex },
-        parsed: nowLooking,
-      };
+    const binaryIndex = binaryIndexOrAnalysis;
+    let nowLooking = parsed;
+    while (nowLooking.children.length !== 0) {
+      let nowLookingOrUndefined = nowLooking.children.find(
+        (child) =>
+          child.data.minIndex <= binaryIndex &&
+          binaryIndex <= child.data.maxIndex
+      );
+      if (nowLookingOrUndefined === undefined) return null;
+      nowLooking = nowLookingOrUndefined.data;
     }
 
-    // Cannot be reach
-    return null;
+    return {
+      binary: { minIndex: nowLooking.minIndex, maxIndex: nowLooking.maxIndex },
+      parsed: nowLooking,
+    };
   } else {
     return {
       binary: {
@@ -165,7 +160,7 @@ function createSelectedFragment(
 
 function App() {
   const [binaries, setBinaries] = useState<number[]>([]);
-  const [parsed, setParsed] = useState<ParsedData[] | null>(null);
+  const [parsed, setParsed] = useState<ParsedData | null>(null);
   const [filePath, setFilePath] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -224,7 +219,7 @@ function App() {
     return () => {
       ignore = true;
     };
-  }, [filePath, parserValue]);
+  }, [filePath]);
 
   useEffect(() => {
     if (binaries == null || parserValue == null) {
@@ -238,7 +233,7 @@ function App() {
       invoke("parse", {
         parser: parserValue,
         data: binaries,
-      }) as Promise<ParsedData[] | string>
+      }) as Promise<ParsedData | string>
     ).then((parsed) => {
       if (!ignore && typeof parsed !== "string") {
         console.log(parsed);
@@ -270,11 +265,11 @@ function App() {
         )
       )}
       <select
-        onChange={(e) => setParserValue(e.target as unknown as string)}
+        onChange={(e) => setParserValue(e.target.value as unknown as string)}
         defaultValue={parserValue!}
       >
         {parserList.map((parser, i) => (
-          <option key={i}>{parser}</option>
+          <option key={i} value={parser}>{parser}</option>
         ))}
       </select>
     </div>

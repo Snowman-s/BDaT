@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../syntax_schema/syntax.schema.json
+# yaml-language-server: $schema=../../../syntax_schema/syntax.json
 
 id: テキストファイル
 

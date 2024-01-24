@@ -20,7 +20,7 @@ fn load_binary_file(path: String) -> Result<Vec<u8>, String> {
 
 #[tauri::command]
 fn parse(parser: String, data: Vec<u8>) -> serde_json::Value {
-    inner_parse(&parser, data).into()
+    inner_parse(&parser, data)
 }
 
 #[tauri::command]

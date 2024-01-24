@@ -8,5 +8,8 @@
     "byte": {
       "type": "number"
     }
-  }
+  },
+  "required": [
+    "byte"
+  ]
 }

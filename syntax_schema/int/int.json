@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "*": {
+          "type": "array",
+          "items": {
+            "$ref": "./int.json"
+          }
+        }
+      },
+      "required": [
+        "*"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "+": {
+          "type": "array",
+          "items": {
+            "$ref": "./int.json"
+          }
+        }
+      },
+      "required": [
+        "+"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "./int.json"
+        },
+        "//": {
+          "$ref": "./int.json"
+        }
+      },
+      "required": [
+        "input",
+        "//"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "./int.json"
+        },
+        "to_floor_multiple_of": {
+          "$ref": "./int.json"
+        }
+      },
+      "required": [
+        "input",
+        "to_floor_multiple_of"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

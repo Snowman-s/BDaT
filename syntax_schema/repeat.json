@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "repeat0"
+        },
+        "children": {
+          "$ref": "./syntax.json"
+        }
+      },
+      "required": [
+        "children"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "repeat"
+        },
+        "children": {
+          "$ref": "./syntax.json"
+        },
+        "repeat_times": {
+          "$ref": "./int/int.json"
+        }
+      },
+      "required": [
+        "children",
+        "repeat_times"
+      ]
+    }
+  ]
+}

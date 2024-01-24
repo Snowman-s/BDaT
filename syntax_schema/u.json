@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "type": {
+      "oneOf": [
+        {
+          "const": "u8"
+        },
+        {
+          "const": "u16"
+        },
+        {
+          "const": "u32"
+        }
+      ]
+    }
+  }
+}

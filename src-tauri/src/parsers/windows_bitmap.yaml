@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../../../syntax_schema/syntax.json
+
+id: ビットマップファイル
+
+type: tuple
+
+items:
+  - 
+    id: BITMAPFILEHEADER
+    type: tuple
+    items:
+      - {id: bfType, type: constants, constants: [66, 77]} 
+      - {id: bfSize, type: u32}
+      - {id: bfReserved1, type: skim, len_bytes: 2}
+      - {id: bfReserved2, type: skim, len_bytes: 2}
+      - {id: bfOffBits, type: u32}
+  - 
+    id: BITMAPINFOHEADER
+    type: tuple
+    items:
+      - {id: biSize, type: u32}
+      - {id: biWidth, type: u32}
+      - {id: biHeight, type: u32}
+      - {id: biPlanes, type: u16}
+      - {id: biBitCount, type: u16}
+      - {id: biCompression, type: constants, constants: [0, 0, 0, 0]}
+      - {id: biSizeImage, type: u32}
+      - {id: biXPelsPerMeter, type: u32}
+      - {id: biYPelsPerMeter, type: u32}
+      - {id: biClrUsed, type: u32}
+      - {id: biClrImportant, type: u32}
+  - 
+    id: BITMAPDATA
+    type: repeat
+    repeat_times: biHeight
+    children:
+      id: row
+      type: skim
+      len_bytes:
+      # 4 バイトの倍数になるように埋める
+        input:
+          input: 
+            "*": [biWidth, biBitCount]
+          to_floor_multiple_of: 32
+        //: 8
+

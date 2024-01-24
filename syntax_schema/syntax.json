@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "allOf": [
+    {
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "oneOf": [
+        {
+          "$ref": "./repeat.json"
+        },
+        {
+          "$ref": "./until_byte.json"
+        },
+        {
+          "$ref": "./tuple.json"
+        },
+        {
+          "$ref": "./constants.json"
+        },
+        {
+          "$ref": "./u.json"
+        },
+        {
+          "$ref": "./skim.json"
+        },
+        {
+          "$ref": "./user_defined.json"
+        }
+      ],
+      "required": [
+        "type"
+      ]
+    }
+  ]
+}

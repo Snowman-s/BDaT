@@ -3,10 +3,13 @@
   "type": "object",
   "properties": {
     "type": {
-      "const": "repeat0"
+      "const": "skim"
     },
-    "children": {
-      "$ref": "./syntax.schema.json"
+    "len_bytes": {
+      "$ref": "./int/int.json"
     }
-  }
+  },
+  "required": [
+    "len_bytes"
+  ]
 }
